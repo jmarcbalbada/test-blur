@@ -27,7 +27,7 @@ const App: React.FC = () => {
 
     const selfieSegmentation = new SelfieSegmentation({
       locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
     });
     selfieSegmentation.setOptions({ modelSelection: 1 });
 
