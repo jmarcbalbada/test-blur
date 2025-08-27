@@ -23,11 +23,9 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!selectedDeviceId) return;
-
     const selfieSegmentation = new SelfieSegmentation({
       locateFile: (file) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/${file}`,
+        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
     });
     selfieSegmentation.setOptions({ modelSelection: 1 });
 
@@ -39,7 +37,7 @@ const App: React.FC = () => {
     let lastBlurredFrameTime = performance.now();
     let blurredFrames = 0;
 
-    // Stop old stream
+    // Stop old stream if switching camera
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
@@ -47,8 +45,13 @@ const App: React.FC = () => {
 
     // Start new stream
     navigator.mediaDevices
-      .getUserMedia({ video: { deviceId: { exact: selectedDeviceId } } })
+      .getUserMedia(
+        selectedDeviceId
+          ? { video: { deviceId: { exact: selectedDeviceId } } }
+          : { video: true } // fallback to default camera
+      )
       .then((stream) => {
+        console.log("Camera stream started:", stream);
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -71,6 +74,9 @@ const App: React.FC = () => {
           animationFrameId = requestAnimationFrame(render);
         };
         render();
+      })
+      .catch((err) => {
+        console.error("getUserMedia error:", err);
       });
 
     selfieSegmentation.onResults((results) => {
@@ -165,7 +171,6 @@ const App: React.FC = () => {
             playsInline
             autoPlay
             muted
-            // visible + fixed size so it sits beside the canvas
             style={{
               width: 480,
               height: 360,
