@@ -91,6 +91,27 @@ const App: React.FC = () => {
 
       ctx.save();
 
+      // --- Detect if front camera ---
+      let isFront = false;
+      const srcObj = videoRef.current.srcObject;
+
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (srcObj instanceof MediaStream) {
+        const track = srcObj.getVideoTracks()[0];
+        const settings = track.getSettings();
+
+        if (isMobile && settings.facingMode === "user") {
+          isFront = true; // only mirror on mobile front cams
+        }
+      }
+
+      // ✅ Apply mirroring only if front cam detected
+      if (isFront) {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+
       // Draw mask first
       ctx.drawImage(
         results.segmentationMask,
