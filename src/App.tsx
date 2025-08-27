@@ -85,32 +85,11 @@ const App: React.FC = () => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d")!;
 
-      // Always match canvas internal resolution to video stream resolution
+      // ✅ Always match canvas internal resolution to video stream resolution
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
 
       ctx.save();
-
-      // --- Detect if front camera ---
-      let isFront = false;
-      const srcObj = videoRef.current.srcObject;
-
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (srcObj instanceof MediaStream) {
-        const track = srcObj.getVideoTracks()[0];
-        const settings = track.getSettings();
-
-        if (isMobile && settings.facingMode === "user") {
-          isFront = true; // only mirror on mobile front cams
-        }
-      }
-
-      // ✅ Apply mirroring only if front cam detected
-      if (isFront) {
-        ctx.translate(canvas.width, 0);
-        ctx.scale(-1, 1);
-      }
 
       // Draw mask first
       ctx.drawImage(
@@ -198,13 +177,12 @@ const App: React.FC = () => {
             autoPlay
             muted
             style={{
-              width: "100%",
-              maxWidth: 480,
-              aspectRatio: "4 / 3", // keeps proportion
+              width: 480,
+              height: 360,
               border: "1px solid #ddd",
               borderRadius: 8,
               background: "#000",
-              objectFit: "cover",
+              objectFit: "cover", // ✅ ensure same scaling
             }}
           />
           <p style={{ marginTop: 8, fontSize: 12, color: "#555" }}>
@@ -223,12 +201,12 @@ const App: React.FC = () => {
           <canvas
             ref={canvasRef}
             style={{
-              width: "100%",
-              maxWidth: 480,
-              aspectRatio: "4 / 3", // keeps proportion in sync
+              width: 480,
+              height: 360,
               border: "1px solid #ddd",
               borderRadius: 8,
               background: "#000",
+              objectFit: "cover", // ✅ same as video
             }}
           />
           <p style={{ marginTop: 8, fontSize: 12, color: "#555" }}>
