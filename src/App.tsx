@@ -80,13 +80,18 @@ const App: React.FC = () => {
       });
 
     selfieSegmentation.onResults((results) => {
-      if (!canvasRef.current) return;
+      if (!canvasRef.current || !videoRef.current) return;
+
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d")!;
-      canvas.width = results.image.width;
-      canvas.height = results.image.height;
+
+      // Always match canvas internal resolution to video stream resolution
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
 
       ctx.save();
+
+      // Draw mask first
       ctx.drawImage(
         results.segmentationMask,
         0,
@@ -100,7 +105,7 @@ const App: React.FC = () => {
       ctx.filter = "blur(15px)";
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
 
-      // Person in front
+      // Draw person in front
       ctx.globalCompositeOperation = "destination-atop";
       ctx.filter = "none";
       ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
@@ -172,8 +177,9 @@ const App: React.FC = () => {
             autoPlay
             muted
             style={{
-              width: 480,
-              height: 360,
+              width: "100%",
+              maxWidth: 480,
+              aspectRatio: "4 / 3", // keeps proportion
               border: "1px solid #ddd",
               borderRadius: 8,
               background: "#000",
@@ -196,8 +202,9 @@ const App: React.FC = () => {
           <canvas
             ref={canvasRef}
             style={{
-              width: 480,
-              height: 360,
+              width: "100%",
+              maxWidth: 480,
+              aspectRatio: "4 / 3", // keeps proportion in sync
               border: "1px solid #ddd",
               borderRadius: 8,
               background: "#000",
